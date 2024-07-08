@@ -31,8 +31,20 @@ class PieChartInteractor: PieChartInteractorInputProtocol {
             }
             
             do {
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Double] {
-                    let pieChartDataEntries = json.map { PieChartDataEntry(value: $0.value, label: $0.key) }
+                if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                    // Assuming we want to use "abiertos", "cerrados", and "no_interesados" as the pie chart data
+                    guard let firstEntry = jsonArray.first else { return }
+                    
+                    let abiertos = firstEntry["abiertos"] as? Double ?? 0
+                    let cerrados = firstEntry["cerrados"] as? Double ?? 0
+                    let noInteresados = firstEntry["nO_INTERESADOS"] as? Double ?? 0
+                    
+                    let pieChartDataEntries = [
+                        PieChartDataEntry(value: abiertos, label: "Abiertos"),
+                        PieChartDataEntry(value: cerrados, label: "Cerrados"),
+                        PieChartDataEntry(value: noInteresados, label: "No Interesados")
+                    ]
+                    
                     DispatchQueue.main.async {
                         self.presenter?.didFetchPieChartData(pieChartDataEntries)
                     }
@@ -43,8 +55,9 @@ class PieChartInteractor: PieChartInteractorInputProtocol {
             }
         }.resume()
     }
-
 }
+
+
 
 
 
