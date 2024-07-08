@@ -9,6 +9,7 @@ import UIKit
 import Charts
 import DGCharts
 
+
 class PieChartViewController: UIViewController, PieChartViewProtocol {
     var presenter: PieChartPresenterProtocol?
 
@@ -21,7 +22,7 @@ class PieChartViewController: UIViewController, PieChartViewProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+
         // Agrega pieChartView como subvista y establece las restricciones
         view.addSubview(pieChartView)
         pieChartView.translatesAutoresizingMaskIntoConstraints = false
@@ -35,9 +36,11 @@ class PieChartViewController: UIViewController, PieChartViewProtocol {
         presenter?.viewDidLoad() // Llama al método del presenter para cargar los datos
     }
 
+
     func showPieChart(with data: [PieChartDataEntry]) {
         print("Data entries received: \(data)")
-        print("entro aqui")
+
+        pieChartView.data = nil // Limpiar datos existentes
 
         let chartDataEntries = data.map { entry -> ChartDataEntry in
             return ChartDataEntry(x: Double(entry.label) ?? 0.0, y: entry.value, data: entry)
@@ -54,6 +57,7 @@ class PieChartViewController: UIViewController, PieChartViewProtocol {
 
 
 }
+
 
 
 

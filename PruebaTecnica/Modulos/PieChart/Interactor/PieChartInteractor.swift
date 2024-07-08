@@ -7,6 +7,15 @@
 
 import Foundation
 
+// Enum para las categorías de estado de prospectos
+enum ProspectStatus: String {
+    case abiertos = "Abiertos"
+    case cerrados = "Cerrados"
+    case noInteresados = "No Interesados"
+}
+
+// Interactor para obtener datos del gráfico de pastel
+
 class PieChartInteractor: PieChartInteractorInputProtocol {
     weak var presenter: PieChartInteractorOutputProtocol?
 
@@ -31,23 +40,55 @@ class PieChartInteractor: PieChartInteractorInputProtocol {
             }
             
             do {
-                if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
-                    // Assuming we want to use "abiertos", "cerrados", and "no_interesados" as the pie chart data
-                    guard let firstEntry = jsonArray.first else { return }
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                    // Caso para arreglo de objetos JSON
+                    print("Processing JSON as array of dictionaries")
                     
-                    let abiertos = firstEntry["abiertos"] as? Double ?? 0
-                    let cerrados = firstEntry["cerrados"] as? Double ?? 0
-                    let noInteresados = firstEntry["nO_INTERESADOS"] as? Double ?? 0
-                    
-                    let pieChartDataEntries = [
-                        PieChartDataEntry(value: abiertos, label: "Abiertos"),
-                        PieChartDataEntry(value: cerrados, label: "Cerrados"),
-                        PieChartDataEntry(value: noInteresados, label: "No Interesados")
-                    ]
-                    
-                    DispatchQueue.main.async {
-                        self.presenter?.didFetchPieChartData(pieChartDataEntries)
+                    guard let firstEntry = json.first else {
+                        print("Error: Empty JSON array")
+                        return
                     }
+                    
+                    if let abiertos = firstEntry["abiertos"] as? Double,
+                       let cerrados = firstEntry["cerrados"] as? Double,
+                       let noInteresados = firstEntry["nO_INTERESADOS"] as? Double {
+                        
+                        let pieChartDataEntries = [
+                            PieChartDataEntry(value: abiertos, label: ProspectStatus.abiertos.rawValue),
+                            PieChartDataEntry(value: cerrados, label: ProspectStatus.cerrados.rawValue),
+                            PieChartDataEntry(value: noInteresados, label: ProspectStatus.noInteresados.rawValue)
+                        ]
+                        
+                        DispatchQueue.main.async {
+                            self.presenter?.didFetchPieChartData(pieChartDataEntries)
+                        }
+                    } else {
+                        print("Error: Missing or invalid fields in JSON object")
+                    }
+                    
+                } else if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    // Caso para objeto JSON único
+                    print("Processing JSON as a single dictionary")
+                    
+                    if let abiertos = json["abiertos"] as? Double,
+                       let cerrados = json["cerrados"] as? Double,
+                       let noInteresados = json["nO_INTERESADOS"] as? Double {
+                        
+                        let pieChartDataEntries = [
+                            PieChartDataEntry(value: abiertos, label: ProspectStatus.abiertos.rawValue),
+                            PieChartDataEntry(value: cerrados, label: ProspectStatus.cerrados.rawValue),
+                            PieChartDataEntry(value: noInteresados, label: ProspectStatus.noInteresados.rawValue)
+                        ]
+                        
+                        DispatchQueue.main.async {
+                            self.presenter?.didFetchPieChartData(pieChartDataEntries)
+                        }
+                    } else {
+                        print("Error: Missing or invalid fields in JSON object")
+                    }
+                } else {
+                    // Manejar otros formatos de JSON no esperados
+                    print("Error: Unexpected JSON format")
                 }
             } catch {
                 // Manejar el error de parsing JSON
@@ -56,8 +97,4 @@ class PieChartInteractor: PieChartInteractorInputProtocol {
         }.resume()
     }
 }
-
-
-
-
 
